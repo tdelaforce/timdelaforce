@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import React from 'react'
+import BiblicalUnderstanding from './components/BiblicalUnderstanding'
 
 const sections = ['About', 'Career', 'Biblical Understanding', 'Plating'] as const
 type Section = typeof sections[number]
@@ -116,7 +117,7 @@ const placeholderContent: Record<Section, React.ReactNode> = {
     ))}
   </div>
 ),
-  'Biblical Understanding': 'This is the Biblical Understanding section.',
+  'Biblical Understanding': <BiblicalUnderstanding />,
   Plating: 'This is the Plating section.',
 }
 
