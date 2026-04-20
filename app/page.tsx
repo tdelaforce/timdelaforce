@@ -35,7 +35,87 @@ const placeholderContent: Record<Section, React.ReactNode> = {
       </p>
     </div>
   ),
-  Career: 'This is the Career section.',
+  Career: (
+  <div>
+    <p style={{ color: '#8A99A8', lineHeight: '1.8', fontSize: '1rem', marginBottom: '2.5rem' }}>
+      My career started at Hewlett Packard straight out of high school as a web developer. Since then it's moved through operations, co-founding businesses, acquiring them, and running them. The through line is getting into the work directly and figuring out what actually needs to change.
+    </p>
+
+    {[
+      {
+        title: 'General Manager',
+        company: 'Mirror Industries, a division of H&M Plating Co.',
+        url: 'https://hmplating.com/',
+        period: '2024 — Present',
+        description: 'Oversee the full business — sales, production, maintenance, and everything in between.',
+      },
+      {
+        title: 'CEO',
+        company: 'Mastin Labs',
+        url: 'https://mastinlabs.com/',
+        period: '2023 — 2026',
+        description: 'Acquired alongside three equity partners and operated as CEO. Exited in early 2026.',
+      },
+      {
+        title: 'Principal',
+        company: 'Creator House Operating',
+        url: null,
+        period: '2021 — 2023',
+        description: 'Co-founded a Houston-based search fund focused on acquiring and operating small to medium-sized businesses. Closed first acquisition January 2023.',
+      },
+      {
+        title: 'Operations Lead',
+        company: 'Digital Wildcatters',
+        url: 'https://collide.io/community',
+        period: '2021 — 2022',
+        description: 'Led operations including sales processes and video production studio. Served as operational right hand to the CEO.',
+      },
+      {
+        title: 'Co-Founder & COO',
+        company: 'Creator House Media',
+        url: null,
+        period: '2018 — 2021',
+        description: 'Co-founded and operated a video production company. Managed operations, finance, and creative direction. Acquired by Digital Wildcatters.',
+      },
+      {
+        title: 'Profitability & IT Infrastructure Manager',
+        company: 'Cor-Pro Systems',
+        url: 'https://cor-pro.com/',
+        period: '2020 — 2021',
+        description: 'Oversaw profitability, inventory, purchasing, and IT infrastructure.',
+      },
+      {
+        title: 'Communications & Digital Strategy',
+        company: 'The Work Lodge',
+        url: 'https://worklodge.com/',
+        period: '2016 — 2017',
+        description: 'Managed social media, IT infrastructure, and web development.',
+      },
+      {
+        title: 'Web Developer',
+        company: 'Hewlett Packard Enterprise',
+        url: 'https://www.hpe.com/us/en/home.html',
+        period: '2013 — 2016',
+        description: 'Built an internal training suite used by Sales, Marketing, and Call Center. Grew active users from under 1,000 to over 3,500. Led R&D on a new development platform and automated QA efforts that cut file parsing times by 50%.',
+      },
+    ].map((job) => (
+      <div key={job.title + job.company} style={{ marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid #1C2B3A' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.35rem', flexWrap: 'wrap' as const, gap: '0.5rem' }}>
+          <span style={{ color: '#F0EDE8', fontSize: '1rem', fontWeight: '500' }}>{job.title}</span>
+          <span style={{ color: '#8A99A8', fontSize: '0.85rem' }}>{job.period}</span>
+        </div>
+        {job.url ? (
+          <a href={job.url} target="_blank" rel="noopener noreferrer" style={{ color: '#C9883A', textDecoration: 'none', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>
+            {job.company}
+          </a>
+        ) : (
+          <span style={{ color: '#C9883A', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>{job.company}</span>
+        )}
+        <p style={{ color: '#8A99A8', fontSize: '0.95rem', lineHeight: '1.7' }}>{job.description}</p>
+      </div>
+    ))}
+  </div>
+),
   'Biblical Understanding': 'This is the Biblical Understanding section.',
   Plating: 'This is the Plating section.',
 }
