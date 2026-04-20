@@ -1,65 +1,178 @@
-import Image from "next/image";
+'use client'
+
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import React from 'react'
+
+const sections = ['About', 'Career', 'Biblical Understanding', 'Plating'] as const
+type Section = typeof sections[number]
+
+const placeholderContent: Record<Section, string> = {
+  About: 'This is the About section.',
+  Career: 'This is the Career section.',
+  'Biblical Understanding': 'This is the Biblical Understanding section.',
+  Plating: 'This is the Plating section.',
+}
 
 export default function Home() {
+  const [active, setActive] = useState<Section | null>(null)
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div style={styles.container}>
+      <AnimatePresence mode="wait">
+        {!active ? (
+          <motion.div
+            key="hero"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            style={{ textAlign: 'center' as const }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <h1 style={styles.headline}>Hi, my name is Timothy.</h1>
+            <div style={styles.buttonGroup}>
+              {sections.map((section) => (
+                <button
+                  key={section}
+                  onClick={() => setActive(section)}
+                  style={styles.button}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#C9883A')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  {section}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="layout"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            style={styles.layout}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <div style={styles.sidebar}>
+              <h2
+                style={{ ...styles.sidebarName, cursor: 'pointer' }}
+                onClick={() => setActive(null)}
+              >
+                Timothy
+              </h2>
+              {sections.map((section) => (
+                <button
+                  key={section}
+                  onClick={() => setActive(section)}
+                  style={{
+                    ...styles.sidebarButton,
+                    color: active === section ? '#C9883A' : '#F0EDE8',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = '#C9883A')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = active === section ? '#C9883A' : '#F0EDE8')}
+                >
+                  {section}
+                </button>
+              ))}
+            </div>
+            <div style={styles.content}>
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h2 style={styles.contentHeadline}>{active}</h2>
+                <p style={styles.contentText}>{placeholderContent[active]}</p>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  );
+  )
+}
+
+const styles: Record<string, React.CSSProperties> = {
+  container: {
+    minHeight: '100vh',
+    backgroundColor: '#0F1923',
+    color: '#F0EDE8',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontFamily: 'sans-serif',
+  },
+  headline: {
+    fontSize: '2.5rem',
+    fontWeight: '300',
+    marginBottom: '2.5rem',
+    color: '#F0EDE8',
+    letterSpacing: '0.02em',
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '1rem',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
+  button: {
+    padding: '0.75rem 1.75rem',
+    border: '1px solid #C9883A',
+    borderRadius: '4px',
+    backgroundColor: 'transparent',
+    color: '#F0EDE8',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s ease',
+    letterSpacing: '0.05em',
+  },
+  layout: {
+    display: 'flex',
+    width: '100vw',
+    minHeight: '100vh',
+  },
+  sidebar: {
+    width: '220px',
+    minHeight: '100vh',
+    backgroundColor: '#1C2B3A',
+    padding: '2.5rem 1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+  },
+  sidebarName: {
+    fontSize: '1.25rem',
+    fontWeight: '400',
+    color: '#F0EDE8',
+    marginBottom: '1.5rem',
+    letterSpacing: '0.05em',
+  },
+  sidebarButton: {
+    background: 'none',
+    border: 'none',
+    fontSize: '0.95rem',
+    cursor: 'pointer',
+    textAlign: 'left',
+    padding: '0.4rem 0',
+    transition: 'color 0.2s ease',
+    letterSpacing: '0.03em',
+  },
+  content: {
+    flex: 1,
+    padding: '4rem',
+    display: 'flex',
+    alignItems: 'flex-start',
+  },
+  contentHeadline: {
+    fontSize: '2rem',
+    fontWeight: '300',
+    marginBottom: '1.5rem',
+    color: '#F0EDE8',
+  },
+  contentText: {
+    color: '#8A99A8',
+    lineHeight: '1.7',
+    fontSize: '1rem',
+  },
 }
