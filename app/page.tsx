@@ -7,8 +7,34 @@ import React from 'react'
 const sections = ['About', 'Career', 'Biblical Understanding', 'Plating'] as const
 type Section = typeof sections[number]
 
-const placeholderContent: Record<Section, string> = {
-  About: 'This is the About section.',
+const placeholderContent: Record<Section, React.ReactNode> = {
+  About: (
+    <div>
+      <p style={{ color: '#8A99A8', lineHeight: '1.8', fontSize: '1rem', marginBottom: '1.25rem' }}>
+        I've spent my career in the middle of real operations, not managing them from a distance.
+      </p>
+      <p style={{ color: '#8A99A8', lineHeight: '1.8', fontSize: '1rem', marginBottom: '1.25rem' }}>
+        Right now I'm the General Manager of{' '}
+        <a href="https://hmplating.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#C9883A', textDecoration: 'none' }}>
+          Mirror Industries, a division of H&M Plating Co.
+        </a>
+        , where I oversee the full business — sales, production, maintenance, and everything in between.
+      </p>
+      <p style={{ color: '#8A99A8', lineHeight: '1.8', fontSize: '1rem', marginBottom: '1.25rem' }}>
+        Before that, I acquired{' '}
+        <a href="https://mastinlabs.com/" target="_blank" rel="noopener noreferrer" style={{ color: '#C9883A', textDecoration: 'none' }}>
+          Mastin Labs
+        </a>{' '}
+        alongside three equity partners and ran it as its operator. We exited in early 2026.
+      </p>
+      <p style={{ color: '#8A99A8', lineHeight: '1.8', fontSize: '1rem', marginBottom: '1.25rem' }}>
+        What I do well is figure out what's actually broken, not just what looks broken. I work from first principles — whether I'm rebuilding a customer outreach process, fixing a production bottleneck, or rethinking how a business presents itself. I've done sales, operations, marketing, and turnaround work.
+      </p>
+      <p style={{ color: '#8A99A8', lineHeight: '1.8', fontSize: '1rem' }}>
+        I'm from South Africa, live in Houston, and I like solving difficult problems.
+      </p>
+    </div>
+  ),
   Career: 'This is the Career section.',
   'Biblical Understanding': 'This is the Biblical Understanding section.',
   Plating: 'This is the Plating section.',
@@ -83,7 +109,7 @@ export default function Home() {
                 transition={{ duration: 0.3 }}
               >
                 <h2 style={styles.contentHeadline}>{active}</h2>
-                <p style={styles.contentText}>{placeholderContent[active]}</p>
+                <div style={styles.contentText}>{placeholderContent[active]}</div>
               </motion.div>
             </div>
           </motion.div>
