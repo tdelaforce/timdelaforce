@@ -13,7 +13,7 @@ const diagrams = [
   },
 ]
 
-export default function BiblicalUnderstanding() {
+export default function TheWord() {
   const [selected, setSelected] = useState<string | null>(null)
 
   const selectedDiagram = diagrams.find(d => d.id === selected)

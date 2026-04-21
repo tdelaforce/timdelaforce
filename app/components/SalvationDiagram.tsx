@@ -1,4 +1,3 @@
-'use client'
 import { useState } from "react";
 
 const DARK_BLUE = "#1F3864";
@@ -12,7 +11,22 @@ const GRAY = "#595959";
 const PURPLE = "#4A235A";
 const LIGHT_PURPLE = "#E8D5F5";
 
-const explainers: Record<string, string> = {
+type ExplainerMap = Record<string, string>;
+type ScriptureMap = Record<string, string>;
+
+interface Stage {
+  id: string;
+  label: string;
+  color: string;
+  lightColor: string;
+  icon: string;
+  sublabel: string | null;
+  description: string;
+  verses: string[];
+  keywords: string[];
+}
+
+const explainers: ExplainerMap = {
   "Genesis 3:6-7": "Eve saw the forbidden tree and ate. Adam followed. In that moment sin entered God's creation for the first time. Their eyes were opened to shame — the immediate consequence of disobedience.",
   "Genesis 3:17-19": "God pronounces the curse on Adam. Because he disobeyed, toil, sorrow and death become the lot of all mankind. Dust thou art and unto dust thou shalt return — death is now the end of every human life.",
   "Genesis 3:23-24": "God drives Adam and Eve out of the garden. Cherubim and a flaming sword are placed to guard the way back to the tree of life. Every person born after this moment is born outside the garden — separated from God and from life.",
@@ -44,10 +58,18 @@ const explainers: Record<string, string> = {
   "Romans 8:30": "Paul tracing the full chain of salvation from predestination to glorification. Those God called He justified. Those He justified He glorified. Glorification is the certain end for those genuinely in Christ.",
   "Zechariah 14:4,9": "The prophet describing Christ's return. His feet stand on the Mount of Olives. He reigns as King over all the earth. The kingdom is physical and earthly — not a distant heaven.",
   "Galatians 3:19": "Paul explaining why the law of animal sacrifice was given. It was added because of transgressions — Israel's sin with the golden calf. It was temporary, pointing forward until the seed — Christ — came.",
+  "Revelation 14:12": "John describing who the saints are in the last days. Not defined by nationality or background but by two things held together — keeping the commandments of God and having the faith of Jesus. Faith and obedience are not alternatives. They are the two marks of the same people.",
+  "Matthew 24:13": "Jesus himself setting the condition for salvation in plain terms. Endurance to the end. Not just an initial decision but persisting through the entire journey.",
+  "Matthew 10:22": "Jesus warning his disciples of the hatred they will face and then giving the promise — he that endures to the end shall be saved. Endurance is tied directly to salvation.",
+  "James 1:12": "The man who endures temptation is blessed. When he is tried and holds firm he receives the crown of life. What is being endured is temptation — the pull toward sin and away from God's commandments.",
+  "Revelation 2:10": "Christ speaking to the church at Smyrna. Be faithful unto death and receive the crown of life. Faithfulness through suffering and trial is the path to glorification.",
+  "1 Corinthians 10:13": "God's promise to those enduring temptation. No temptation is beyond what a person can bear. God always provides a way of escape. The expectation is that the believer takes that way of escape rather than surrendering to sin.",
+  "Genesis 4:7": "God speaking to Cain before he kills Abel. Sin is crouching at the door. You must rule over it. The earliest picture of what enduring temptation looks like — the standard existed, the temptation was real, and the responsibility to resist it was personal.",
+  "Hebrews 12:1": "The believer running a race that requires laying aside sin and running with patience. The cloud of witnesses — those who have gone before — surrounds the runner. Endurance is the posture of the whole Christian life.",
   "Jeremiah 7:22": "God himself stating that He did not command burnt offerings and sacrifices when He brought Israel out of Egypt. What He commanded was obedience. The sacrificial system came later as an addition.",
 };
 
-const scriptures: Record<string, string> = {
+const scriptures: ScriptureMap = {
   "Romans 3:23": "(23) For all have sinned, and come short of the glory of God.",
   "Ephesians 2:1": "(1) And you hath he quickened, who were dead in trespasses and sins.",
   "Romans 6:23": "(23) For the wages of sin is death; but the gift of God is eternal life through Jesus Christ our Lord.",
@@ -80,9 +102,17 @@ const scriptures: Record<string, string> = {
   "Romans 5:12": "(12) Wherefore, as by one man sin entered into the world, and death by sin; and so death passed upon all men, for that all have sinned.",
   "Galatians 3:19": "(19) Wherefore then serveth the law? It was added because of transgressions, till the seed should come to whom the promise was made; and it was ordained by angels in the hand of a mediator.",
   "Jeremiah 7:22": "(22) For I spake not unto your fathers, nor commanded them in the day that I brought them out of the land of Egypt, concerning burnt offerings or sacrifices.",
+  "Revelation 14:12": "(12) Here is the patience of the saints: here are they that keep the commandments of God, and the faith of Jesus.",
+  "Matthew 24:13": "(13) But he that shall endure unto the end, the same shall be saved.",
+  "Matthew 10:22": "(22) And ye shall be hated of all men for my name's sake: but he that endureth to the end shall be saved.",
+  "James 1:12": "(12) Blessed is the man that endureth temptation: for when he is tried, he shall receive the crown of life, which the Lord hath promised to them that love him.",
+  "Revelation 2:10": "(10) Fear none of those things which thou shalt suffer: behold, the devil shall cast some of you into prison, that ye may be tried; and ye shall have tribulation ten days: be thou faithful unto death, and I will give thee a crown of life.",
+  "1 Corinthians 10:13": "(13) There hath no temptation taken you but such as is common to man: but God is faithful, who will not suffer you to be tempted above that ye are able; but will with the temptation also make a way to escape, that ye may be able to bear it.",
+  "Genesis 4:7": "(7) If thou doest well, shalt thou not be accepted? and if thou doest not well, sin lieth at the door. And unto thee shall be his desire, and thou shalt rule over it.",
+  "Hebrews 12:1": "(1) Wherefore seeing we also are compassed about with so great a cloud of witnesses, let us lay aside every weight, and the sin which doth so easily beset us, and let us run with patience the race that is set before us.",
 };
 
-const stages = [
+const stages: Stage[] = [
   {
     id: "pre",
     label: "Before Salvation",
@@ -133,7 +163,8 @@ export default function SalvationDiagram() {
   const [selected, setSelected] = useState<string>("pre");
   const [openVerse, setOpenVerse] = useState<string | null>(null);
 
-  const selectedStage = stages.find(s => s.id === selected);
+  const selectedStage = stages.find((s) => s.id === selected);
+  const openStage = openVerse ? stages.find((s) => s.verses.includes(openVerse)) : null;
 
   return (
     <div style={{ fontFamily: "Georgia, serif", maxWidth: 860, margin: "0 auto", padding: 24, backgroundColor: "#FAFAFA", minHeight: "100vh" }}>
@@ -150,40 +181,29 @@ export default function SalvationDiagram() {
           }}
         >
           <div
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             style={{
               backgroundColor: "white",
               borderRadius: 16,
               padding: 28,
               maxWidth: 500,
               width: "100%",
-              border: `2px solid ${stages.find(s => s.verses.includes(openVerse))?.color || MID_BLUE}`,
+              border: `2px solid ${openStage?.color || MID_BLUE}`,
               boxShadow: "0 8px 40px rgba(0,0,0,0.25)"
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-              <p style={{
-                color: stages.find(s => s.verses.includes(openVerse))?.color || MID_BLUE,
-                fontWeight: "bold", fontSize: 15, margin: 0,
-                fontFamily: "Arial, sans-serif"
-              }}>
+              <p style={{ color: openStage?.color || MID_BLUE, fontWeight: "bold", fontSize: 15, margin: 0, fontFamily: "Arial, sans-serif" }}>
                 {openVerse} (KJV)
               </p>
               <button
                 onClick={() => setOpenVerse(null)}
-                style={{
-                  background: "none", border: "none", cursor: "pointer",
-                  color: GRAY, fontSize: 20, padding: "0 0 0 16px", lineHeight: 1,
-                  flexShrink: 0
-                }}
+                style={{ background: "none", border: "none", cursor: "pointer", color: GRAY, fontSize: 20, padding: "0 0 0 16px", lineHeight: 1, flexShrink: 0 }}
               >✕</button>
             </div>
-            <div style={{
-              backgroundColor: stages.find(s => s.verses.includes(openVerse))?.lightColor || LIGHT_BLUE,
-              borderRadius: 10, padding: 16
-            }}>
+            <div style={{ backgroundColor: openStage?.lightColor || LIGHT_BLUE, borderRadius: 10, padding: 16 }}>
               {explainers[openVerse] && (
-                <p style={{ color: "#3A3A3A", fontSize: 13, lineHeight: 1.7, margin: "0 0 10px 0", fontFamily: "Arial, sans-serif", borderBottom: `1px solid ${stages.find(s => s.verses.includes(openVerse))?.color || MID_BLUE}44`, paddingBottom: 10 }}>
+                <p style={{ color: "#3A3A3A", fontSize: 13, lineHeight: 1.7, margin: "0 0 10px 0", fontFamily: "Arial, sans-serif", borderBottom: `1px solid ${openStage?.color || MID_BLUE}44`, paddingBottom: 10 }}>
                   {explainers[openVerse]}
                 </p>
               )}
@@ -195,7 +215,7 @@ export default function SalvationDiagram() {
               onClick={() => setOpenVerse(null)}
               style={{
                 marginTop: 16, width: "100%",
-                backgroundColor: stages.find(s => s.verses.includes(openVerse))?.color || MID_BLUE,
+                backgroundColor: openStage?.color || MID_BLUE,
                 color: "white", border: "none", borderRadius: 8,
                 padding: "10px 0", cursor: "pointer", fontSize: 13,
                 fontFamily: "Arial, sans-serif", fontWeight: "bold"
@@ -232,6 +252,7 @@ export default function SalvationDiagram() {
                 cursor: "pointer",
                 textAlign: "center",
                 minWidth: 130,
+                height: 90,
                 transition: "all 0.2s",
                 boxShadow: selected === stage.id ? `0 4px 12px ${stage.color}44` : "none"
               }}
@@ -262,10 +283,8 @@ export default function SalvationDiagram() {
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
             <div style={{
-              backgroundColor: selectedStage.color,
-              color: "white",
-              borderRadius: "50%",
-              width: 44, height: 44,
+              backgroundColor: selectedStage.color, color: "white",
+              borderRadius: "50%", width: 44, height: 44,
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 20, flexShrink: 0
             }}>
@@ -278,48 +297,36 @@ export default function SalvationDiagram() {
               )}
             </div>
           </div>
-
           <p style={{ color: "#1A1A1A", fontSize: 14, lineHeight: 1.8, marginBottom: 14, fontFamily: "Arial, sans-serif" }}>
             {selectedStage.description}
           </p>
-
           {selectedStage.keywords.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-              {selectedStage.keywords.map(kw => (
+              {selectedStage.keywords.map((kw) => (
                 <span key={kw} style={{
-                  backgroundColor: selectedStage.lightColor,
-                  color: selectedStage.color,
-                  border: `1px solid ${selectedStage.color}`,
-                  borderRadius: 20,
-                  padding: "3px 10px",
-                  fontSize: 11, fontWeight: "bold",
-                  fontFamily: "Arial, sans-serif"
+                  backgroundColor: selectedStage.lightColor, color: selectedStage.color,
+                  border: `1px solid ${selectedStage.color}`, borderRadius: 20,
+                  padding: "3px 10px", fontSize: 11, fontWeight: "bold", fontFamily: "Arial, sans-serif"
                 }}>
                   {kw}
                 </span>
               ))}
             </div>
           )}
-
           <div style={{ backgroundColor: selectedStage.lightColor, borderRadius: 8, padding: 12 }}>
             <p style={{ color: selectedStage.color, fontWeight: "bold", fontSize: 11, margin: "0 0 8px 0", textTransform: "uppercase", letterSpacing: 1, fontFamily: "Arial, sans-serif" }}>
               Key Scriptures — tap to read
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {selectedStage.verses.map(v => (
+              {selectedStage.verses.map((v) => (
                 <button
                   key={v}
                   onClick={() => setOpenVerse(v)}
                   style={{
-                    backgroundColor: "white",
-                    color: selectedStage.color,
-                    border: `1px solid ${selectedStage.color}`,
-                    borderRadius: 6,
-                    padding: "4px 10px",
-                    fontSize: 12,
-                    cursor: "pointer",
-                    fontFamily: "Arial, sans-serif",
-                    fontWeight: "500"
+                    backgroundColor: "white", color: selectedStage.color,
+                    border: `1px solid ${selectedStage.color}`, borderRadius: 6,
+                    padding: "4px 10px", fontSize: 12, cursor: "pointer",
+                    fontFamily: "Arial, sans-serif", fontWeight: "500"
                   }}
                 >
                   {v}
@@ -339,19 +346,13 @@ export default function SalvationDiagram() {
           { from: "justification", to: "sanctification", label: "Genuine faith produces obedience", verse: "James 2:17", note: "Faith without works is dead" },
           { from: "sanctification", to: "glorification", label: "Faithful obedience rewarded", verse: "Matthew 16:27", note: "Rewarded according to works" }
         ].map((rel, i) => {
-            const fromStage = stages.find(s => s.id === rel.from)!;
-            const toStage = stages.find(s => s.id === rel.to)!;
+          const fromStage = stages.find((s) => s.id === rel.from)!;
+          const toStage = stages.find((s) => s.id === rel.to)!;
           return (
             <div key={i} style={{
-              backgroundColor: "white",
-              border: "1px solid #E0E0E0",
-              borderRadius: 10,
-              padding: 12,
-              marginBottom: 8,
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              flexWrap: "wrap"
+              backgroundColor: "white", border: "1px solid #E0E0E0",
+              borderRadius: 10, padding: 12, marginBottom: 8,
+              display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap"
             }}>
               <span style={{ color: fromStage.color, fontWeight: "bold", fontSize: 12, fontFamily: "Arial, sans-serif" }}>{fromStage.label}</span>
               <span style={{ color: GRAY, fontSize: 16 }}>→</span>
@@ -360,11 +361,7 @@ export default function SalvationDiagram() {
                 <p style={{ margin: "0 0 2px 0", fontSize: 12, color: "#1A1A1A", fontFamily: "Arial, sans-serif" }}>{rel.label}</p>
                 <button
                   onClick={() => setOpenVerse(rel.verse)}
-                  style={{
-                    background: "none", border: "none", cursor: "pointer",
-                    color: MID_BLUE, fontSize: 11, padding: 0, fontStyle: "italic",
-                    fontFamily: "Arial, sans-serif", textDecoration: "underline"
-                  }}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: MID_BLUE, fontSize: 11, padding: 0, fontStyle: "italic", fontFamily: "Arial, sans-serif", textDecoration: "underline" }}
                 >
                   {rel.verse} — {rel.note}
                 </button>
@@ -375,14 +372,7 @@ export default function SalvationDiagram() {
       </div>
 
       {/* Works vs Works of the Law Callout */}
-      <div style={{
-        backgroundColor: LIGHT_PURPLE,
-        border: `2px solid ${PURPLE}`,
-        borderLeft: `6px solid ${PURPLE}`,
-        borderRadius: 10,
-        padding: 16,
-        marginBottom: 14
-      }}>
+      <div style={{ backgroundColor: LIGHT_PURPLE, border: `2px solid ${PURPLE}`, borderLeft: `6px solid ${PURPLE}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
         <p style={{ color: PURPLE, fontWeight: "bold", fontSize: 11, margin: "0 0 12px 0", textTransform: "uppercase", letterSpacing: 1, fontFamily: "Arial, sans-serif" }}>
           Works vs. Works of the Law — Know the Difference
         </p>
@@ -396,7 +386,7 @@ export default function SalvationDiagram() {
               Could never take away sin. Pointed forward to Christ. Ended at the cross when the veil tore.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-              {["Galatians 3:19", "Hebrews 10:4", "Jeremiah 7:22"].map(v => (
+              {["Galatians 3:19", "Hebrews 10:4", "Jeremiah 7:22"].map((v) => (
                 <button key={v} onClick={() => setOpenVerse(v)}
                   style={{ backgroundColor: LIGHT_PURPLE, color: PURPLE, border: `1px solid ${PURPLE}`, borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", fontFamily: "Arial, sans-serif" }}>
                   {v}
@@ -413,7 +403,7 @@ export default function SalvationDiagram() {
               Evidences real faith. Required for final justification before God. What believers are judged by at the last day.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-              {["Romans 2:13", "James 2:24", "2 Corinthians 7:1", "Philippians 2:12"].map(v => (
+              {["Romans 2:13", "James 2:24", "2 Corinthians 7:1", "Philippians 2:12"].map((v) => (
                 <button key={v} onClick={() => setOpenVerse(v)}
                   style={{ backgroundColor: LIGHT_GREEN, color: GREEN, border: `1px solid ${GREEN}`, borderRadius: 6, padding: "3px 8px", fontSize: 11, cursor: "pointer", fontFamily: "Arial, sans-serif" }}>
                   {v}
@@ -424,15 +414,69 @@ export default function SalvationDiagram() {
         </div>
       </div>
 
+      {/* Endurance Transition Callout */}
+      <div style={{ backgroundColor: "#F0F4FF", border: `2px solid ${DARK_BLUE}`, borderLeft: `6px solid ${DARK_BLUE}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
+        <p style={{ color: DARK_BLUE, fontWeight: "bold", fontSize: 11, margin: "0 0 10px 0", textTransform: "uppercase", letterSpacing: 1, fontFamily: "Arial, sans-serif" }}>
+          Sanctification → Glorification — The Path Is Endurance
+        </p>
+        <div style={{ backgroundColor: "white", borderRadius: 8, padding: 12, marginBottom: 12, border: `1px solid ${DARK_BLUE}33` }}>
+          <p style={{ color: DARK_BLUE, fontWeight: "bold", fontSize: 12, margin: "0 0 6px 0", fontFamily: "Arial, sans-serif" }}>Who are the saints?</p>
+          <p style={{ color: "#1A1A1A", fontSize: 13, lineHeight: 1.7, margin: "0 0 8px 0", fontStyle: "italic", fontFamily: "Georgia, serif" }}>
+            "Here is the patience of the saints: here are they that keep the commandments of God, and the faith of Jesus."
+          </p>
+          <button onClick={() => setOpenVerse("Revelation 14:12")}
+            style={{ background: "none", border: "none", cursor: "pointer", color: DARK_BLUE, fontSize: 11, padding: 0, fontFamily: "Arial, sans-serif", textDecoration: "underline" }}>
+            Revelation 14:12 (KJV)
+          </button>
+        </div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+          <div style={{ flex: 1, minWidth: 160, backgroundColor: "white", borderRadius: 8, padding: 10, border: `1px solid ${DARK_BLUE}22` }}>
+            <p style={{ color: DARK_BLUE, fontWeight: "bold", fontSize: 11, margin: "0 0 6px 0", fontFamily: "Arial, sans-serif", textTransform: "uppercase", letterSpacing: 0.5 }}>What to Endure</p>
+            <p style={{ color: "#1A1A1A", fontSize: 11, lineHeight: 1.6, margin: "0 0 8px 0", fontFamily: "Arial, sans-serif" }}>
+              Temptation — the pull toward sin and away from God's commandments. Present from the very beginning in the garden.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {["Genesis 4:7", "James 1:12", "1 Corinthians 10:13"].map((v) => (
+                <button key={v} onClick={() => setOpenVerse(v)}
+                  style={{ backgroundColor: "#F0F4FF", color: DARK_BLUE, border: `1px solid ${DARK_BLUE}44`, borderRadius: 6, padding: "3px 8px", fontSize: 10, cursor: "pointer", fontFamily: "Arial, sans-serif" }}>
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ flex: 1, minWidth: 160, backgroundColor: "white", borderRadius: 8, padding: 10, border: `1px solid ${DARK_BLUE}22` }}>
+            <p style={{ color: DARK_BLUE, fontWeight: "bold", fontSize: 11, margin: "0 0 6px 0", fontFamily: "Arial, sans-serif", textTransform: "uppercase", letterSpacing: 0.5 }}>How to Endure</p>
+            <p style={{ color: "#1A1A1A", fontSize: 11, lineHeight: 1.6, margin: "0 0 8px 0", fontFamily: "Arial, sans-serif" }}>
+              Keeping the commandments of God and the faith of Jesus. Both together. Neither replaces the other.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {["Revelation 14:12", "Hebrews 12:1", "1 John 2:3-4"].map((v) => (
+                <button key={v} onClick={() => setOpenVerse(v)}
+                  style={{ backgroundColor: "#F0F4FF", color: DARK_BLUE, border: `1px solid ${DARK_BLUE}44`, borderRadius: 6, padding: "3px 8px", fontSize: 10, cursor: "pointer", fontFamily: "Arial, sans-serif" }}>
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ flex: 1, minWidth: 160, backgroundColor: "white", borderRadius: 8, padding: 10, border: `1px solid ${DARK_BLUE}22` }}>
+            <p style={{ color: DARK_BLUE, fontWeight: "bold", fontSize: 11, margin: "0 0 6px 0", fontFamily: "Arial, sans-serif", textTransform: "uppercase", letterSpacing: 0.5 }}>The Promise</p>
+            <p style={{ color: "#1A1A1A", fontSize: 11, lineHeight: 1.6, margin: "0 0 8px 0", fontFamily: "Arial, sans-serif" }}>
+              He that endures to the end shall be saved. The crown of life awaits those who remain faithful through the whole journey.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {["Matthew 24:13", "Matthew 10:22", "Revelation 2:10"].map((v) => (
+                <button key={v} onClick={() => setOpenVerse(v)}
+                  style={{ backgroundColor: "#F0F4FF", color: DARK_BLUE, border: `1px solid ${DARK_BLUE}44`, borderRadius: 6, padding: "3px 8px", fontSize: 10, cursor: "pointer", fontFamily: "Arial, sans-serif" }}>
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Key Distinction */}
-      <div style={{
-        backgroundColor: LIGHT_GOLD,
-        border: `2px solid ${GOLD}`,
-        borderLeft: `6px solid ${GOLD}`,
-        borderRadius: 10,
-        padding: 16,
-        marginBottom: 14
-      }}>
+      <div style={{ backgroundColor: LIGHT_GOLD, border: `2px solid ${GOLD}`, borderLeft: `6px solid ${GOLD}`, borderRadius: 10, padding: 16, marginBottom: 14 }}>
         <p style={{ color: GOLD, fontWeight: "bold", fontSize: 11, margin: "0 0 8px 0", textTransform: "uppercase", letterSpacing: 1, fontFamily: "Arial, sans-serif" }}>
           The Key Distinction
         </p>
@@ -442,22 +486,10 @@ export default function SalvationDiagram() {
       </div>
 
       {/* 1 John 2:3-4 */}
-      <div style={{
-        backgroundColor: LIGHT_BLUE,
-        border: `2px solid ${MID_BLUE}`,
-        borderLeft: `6px solid ${MID_BLUE}`,
-        borderRadius: 10,
-        padding: 16
-      }}>
+      <div style={{ backgroundColor: LIGHT_BLUE, border: `2px solid ${MID_BLUE}`, borderLeft: `6px solid ${MID_BLUE}`, borderRadius: 10, padding: 16 }}>
         <button
           onClick={() => setOpenVerse("1 John 2:3-4")}
-          style={{
-            background: "none", border: "none", cursor: "pointer",
-            color: MID_BLUE, fontWeight: "bold", fontSize: 12,
-            margin: "0 0 8px 0", padding: 0,
-            fontFamily: "Arial, sans-serif", textDecoration: "underline",
-            display: "block"
-          }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: MID_BLUE, fontWeight: "bold", fontSize: 12, margin: "0 0 8px 0", padding: 0, fontFamily: "Arial, sans-serif", textDecoration: "underline", display: "block" }}
         >
           1 John 2:3–4 (KJV) — tap to read
         </button>
