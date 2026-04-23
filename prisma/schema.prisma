@@ -1,0 +1,257 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── USER & COMPANY ───────────────────────────────────────
+
+model User {
+  id                String        @id @default(cuid())
+  clerkId           String?       @unique   // set after Clerk account created
+  email             String?       @unique
+  phone             String?
+  fullName          String?
+  preferredContact  ContactMethod @default(EMAIL)
+  isVerified        Boolean       @default(false)
+  role              UserRole      @default(CUSTOMER)
+  companyId         String?
+  company           Company?      @relation(fields: [companyId], references: [id])
+  conversations     Conversation[]
+  quoteRequests     QuoteRequest[]
+  purchaseOrders    PurchaseOrder[]
+  otpCodes          OtpCode[]
+  auditLogs         AuditLog[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum ContactMethod {
+  EMAIL
+  SMS
+}
+
+// ─── OTP ──────────────────────────────────────────────────
+
+model OtpCode {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  code      String
+  method    ContactMethod
+  expiresAt DateTime
+  attempts  Int           @default(0)
+  verified  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+}
+
+// ─── CONVERSATION & MESSAGES ──────────────────────────────
+
+model Conversation {
+  id           String    @id @default(cuid())
+  userId       String?
+  user         User?     @relation(fields: [userId], references: [id])
+  sessionId    String    @unique  // anonymous session ID until verified
+  anonMsgCount Int       @default(0)
+  messages     Message[]
+  quoteRequest QuoteRequest?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  role           MessageRole
+  content        String       @db.Text
+  metadata       Json?        // e.g. { type: "quote_intake_step", step: "dimensions" }
+  createdAt      DateTime     @default(now())
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+// ─── QUOTE REQUEST ────────────────────────────────────────
+
+model QuoteRequest {
+  id               String           @id @default(cuid())
+  conversationId   String           @unique
+  conversation     Conversation     @relation(fields: [conversationId], references: [id])
+  userId           String?
+  user             User?            @relation(fields: [userId], references: [id])
+  status           QuoteStatus      @default(QUOTE_INTAKE_IN_PROGRESS)
+
+  // Intake fields
+  fullName         String?
+  companyName      String?
+  phone            String?
+  email            String?
+  preferredContact ContactMethod?
+  partDescription  String?          @db.Text
+  dimensions       String?          @db.Text
+  quantity         Int?
+  material         String?
+  platingType      String?
+  turnaround       String?
+  notes            String?          @db.Text
+  hasDrawings      Boolean?
+
+  estimate         QuoteEstimate?
+  quote            Quote?
+  drawingRefs      DrawingReference[]
+  auditLogs        AuditLog[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+enum QuoteStatus {
+  NEW_LEAD
+  AWAITING_VERIFICATION
+  QUOTE_INTAKE_IN_PROGRESS
+  AWAITING_DRAWINGS
+  PENDING_REVIEW
+  APPROVED
+  SENT
+  WON
+  LOST
+  PO_RECEIVED
+  IN_PROGRESS
+  COMPLETED
+}
+
+// ─── QUOTE ESTIMATE (AI / Pricing Service Output) ─────────
+
+model QuoteEstimate {
+  id             String       @id @default(cuid())
+  quoteRequestId String       @unique
+  quoteRequest   QuoteRequest @relation(fields: [quoteRequestId], references: [id])
+  estimatedPrice Float?
+  currency       String       @default("USD")
+  breakdown      Json?        // line items from pricing service
+  pricingVersion String?      // version of pricing engine used
+  createdAt      DateTime     @default(now())
+}
+
+// ─── QUOTE (Admin-Approved, Customer-Facing) ──────────────
+
+model Quote {
+  id             String        @id @default(cuid())
+  quoteRequestId String        @unique
+  quoteRequest   QuoteRequest  @relation(fields: [quoteRequestId], references: [id])
+  finalPrice     Float
+  currency       String        @default("USD")
+  terms          String?       @db.Text
+  notes          String?       @db.Text
+  turnaround     String?
+  approvedById   String?       // Clerk user ID of admin who approved
+  approvedAt     DateTime?
+  sentAt         DateTime?
+  expiresAt      DateTime?
+  purchaseOrders PurchaseOrder[]
+  auditLogs      AuditLog[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+// ─── PURCHASE ORDER ───────────────────────────────────────
+
+model PurchaseOrder {
+  id              String    @id @default(cuid())
+  quoteId         String
+  quote           Quote     @relation(fields: [quoteId], references: [id])
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  customerPoNumber String?  // provided by customer
+  internalRef     String    @unique  // generated if no customer PO number
+  source          PoSource  @default(PORTAL)
+  status          PoStatus  @default(RECEIVED)
+  notes           String?   @db.Text
+  auditLogs       AuditLog[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+enum PoSource {
+  EMAIL
+  SMS
+  PORTAL
+}
+
+enum PoStatus {
+  RECEIVED
+  ACKNOWLEDGED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ─── DRAWING REFERENCES ───────────────────────────────────
+
+model DrawingReference {
+  id             String       @id @default(cuid())
+  quoteRequestId String
+  quoteRequest   QuoteRequest @relation(fields: [quoteRequestId], references: [id])
+  fileUrl        String?      // Supabase Storage URL — v2
+  emailReceived  Boolean      @default(false)
+  notes          String?
+  createdAt      DateTime     @default(now())
+}
+
+// ─── AUDIT LOG ────────────────────────────────────────────
+
+model AuditLog {
+  id             String        @id @default(cuid())
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id])
+  quoteRequestId String?
+  quoteRequest   QuoteRequest? @relation(fields: [quoteRequestId], references: [id])
+  quoteId        String?
+  quote          Quote?        @relation(fields: [quoteId], references: [id])
+  purchaseOrderId String?
+  purchaseOrder  PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+  action         String        // e.g. "quote.approved", "otp.verified", "quote.sent"
+  metadata       Json?
+  performedById  String?       // Clerk user ID of who did the action
+  createdAt      DateTime      @default(now())
+}
+
+// ─── NOTIFICATION LOG ────────────────────────────────────
+
+model NotificationLog {
+  id        String           @id @default(cuid())
+  userId    String?
+  method    ContactMethod
+  type      String           // e.g. "otp", "quote_sent", "quote_approved"
+  status    NotificationStatus @default(PENDING)
+  provider  String?          // "twilio" | "resend"
+  metadata  Json?
+  createdAt DateTime         @default(now())
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+}
