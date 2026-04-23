@@ -2,28 +2,54 @@
 
 import { useState } from 'react'
 import SalvationDiagram from './SalvationDiagram'
+import { useLang } from '../context/LanguageContext'
+import type { Lang } from '../context/LanguageContext'
 
-const diagrams = [
-  {
-    id: 'salvation',
-    title: 'Salvation',
-    verse: 'Ephesians 2:8-9',
-    verseText: 'For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: not of works, lest any man should boast.',
-    description: 'A full biblical picture of salvation — from the condition every person is born into, through justification, sanctification, and glorification. Traces the thread from Genesis to Revelation.',
-  },
-]
+const diagrams: Record<Lang, {
+  id: string
+  title: string
+  verse: string
+  verseText: string
+  description: string
+}[]> = {
+  en: [
+    {
+      id: 'salvation',
+      title: 'Salvation',
+      verse: 'Ephesians 2:8-9',
+      verseText: 'For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: not of works, lest any man should boast.',
+      description: 'A full biblical picture of salvation — from the condition every person is born into, through justification, sanctification, and glorification. Traces the thread from Genesis to Revelation.',
+    },
+  ],
+  es: [
+    {
+      id: 'salvation',
+      title: 'Salvación',
+      verse: 'Efesios 2:8-9',
+      verseText: 'Porque por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios; no por obras, para que nadie se gloríe.',
+      description: 'Un panorama bíblico completo de la salvación, desde la condición en que nace toda persona, pasando por la justificación, la santificación y la glorificación. Sigue el hilo desde el Génesis hasta el Apocalipsis.',
+    },
+  ],
+}
+
+const emptyLabel: Record<Lang, string> = {
+  en: 'Select a diagram to explore',
+  es: 'Selecciona un diagrama para explorar',
+}
 
 export default function TheWord() {
   const [selected, setSelected] = useState<string | null>(null)
+  const { lang } = useLang()
 
-  const selectedDiagram = diagrams.find(d => d.id === selected)
+  const currentDiagrams = diagrams[lang]
+  const selectedDiagram = currentDiagrams.find(d => d.id === selected)
 
   return (
     <div style={{ display: 'flex', width: '100%', minHeight: '100%', gap: '2rem' }}>
-      
+
       {/* Card List */}
       <div style={{ width: '280px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {diagrams.map(diagram => (
+        {currentDiagrams.map(diagram => (
           <div
             key={diagram.id}
             onClick={() => setSelected(diagram.id)}
@@ -43,7 +69,7 @@ export default function TheWord() {
               {diagram.verse}
             </p>
             <p style={{ color: '#8A99A8', fontSize: '0.8rem', lineHeight: '1.6', marginBottom: '0.75rem' }}>
-              "{diagram.verseText}"
+              &ldquo;{diagram.verseText}&rdquo;
             </p>
             <p style={{ color: '#8A99A8', fontSize: '0.8rem', lineHeight: '1.6' }}>
               {diagram.description}
@@ -73,7 +99,7 @@ export default function TheWord() {
             fontSize: '0.9rem',
             fontStyle: 'italic',
           }}>
-            Select a diagram to explore
+            {emptyLabel[lang]}
           </div>
         )}
       </div>
