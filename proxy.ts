@@ -4,10 +4,10 @@ const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isPortalRoute = createRouteMatcher(["/portal(.*)"]);
 const isAdminApi = createRouteMatcher(["/api/admin(.*)"]);
 
-export default clerkMiddleware(async (auth, req) => {
+export const proxy = clerkMiddleware(async (auth, req) => {
   if (isAdminRoute(req) || isAdminApi(req)) {
     const { userId, sessionClaims } = await auth();
-    if (!userId || sessionClaims?.metadata?.role !== "admin") {
+    if (!userId || (sessionClaims?.metadata as { role?: string })?.role !== "admin") {
       return new Response("Forbidden", { status: 403 });
     }
   }
