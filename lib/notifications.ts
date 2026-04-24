@@ -1,10 +1,8 @@
 import twilio from "twilio";
 import { Resend } from "resend";
 
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function sendSmsOtp(phone: string, code: string) {
+  const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
   await twilioClient.messages.create({
     body: `Your Metal Finishing Co verification code is: ${code}. Expires in 10 minutes.`,
     from: process.env.TWILIO_PHONE_NUMBER,
@@ -13,6 +11,7 @@ export async function sendSmsOtp(phone: string, code: string) {
 }
 
 export async function sendEmailOtp(email: string, code: string) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
     from: "Metal Finishing Co <noreply@yourcompany.com>",
     to: email,
@@ -22,6 +21,7 @@ export async function sendEmailOtp(email: string, code: string) {
 }
 
 export async function notifyAdminNewQuote(quoteRequestId: string) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
     from: "Metal Finishing Co Bot <noreply@yourcompany.com>",
     to: "tdelaforce@hmplating.com",
